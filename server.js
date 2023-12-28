@@ -3,7 +3,7 @@ const axios = require("axios");
 const cors = require("cors");
 const request = require("request");
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 const clientId = "15780379e12e4f7087459a01ef5d9468";
 const clientSecret = "9ac76df2c3a24d58bbdee29326a70c9b";

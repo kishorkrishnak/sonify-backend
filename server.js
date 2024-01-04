@@ -9,6 +9,7 @@ const port = process.env.PORT || 5000;
 
 const clientId = process.env.SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+const frontendUrl = process.env.FRONTEND_URL;
 
 let accessToken = "";
 let access_token = "";
@@ -41,7 +42,6 @@ const getAccessToken = async () => {
 };
 
 app.get("/token", (req, res) => {
-  console.log("hit cred");
   res.json({
     access_token: accessToken,
   });
@@ -67,7 +67,7 @@ app.get("/auth/login", (req, res) => {
     response_type: "code",
     client_id: clientId,
     scope: scope,
-    redirect_uri: "http://localhost:3000/auth/callback",
+    redirect_uri: `${frontendUrl}/auth/callback`,
     state: state,
   });
 
@@ -83,7 +83,7 @@ app.get("/auth/callback", (req, res) => {
     url: "https://accounts.spotify.com/api/token",
     form: {
       code: code,
-      redirect_uri: "http://localhost:3000/auth/callback",
+      redirect_uri: `${frontendUrl}/auth/callback`,
       grant_type: "authorization_code",
     },
     headers: {
@@ -104,7 +104,6 @@ app.get("/auth/callback", (req, res) => {
 });
 
 app.get("/auth/token", (req, res) => {
-  console.log("hit auth");
   res.json({
     access_token: access_token,
   });

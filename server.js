@@ -2,16 +2,19 @@ const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
 const request = require("request");
+require("dotenv").config();
 const app = express();
+
 const port = process.env.PORT || 5000;
 
-const clientId = "15780379e12e4f7087459a01ef5d9468";
-const clientSecret = "9ac76df2c3a24d58bbdee29326a70c9b";
+const clientId = process.env.SPOTIFY_CLIENT_ID;
+const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 
 let accessToken = "";
-var access_token = "";
+let access_token = "";
 let tokenExpirationTime = 0;
 app.use(cors());
+
 const getAccessToken = async () => {
   try {
     const response = await axios({
@@ -38,29 +41,29 @@ const getAccessToken = async () => {
 };
 
 app.get("/token", (req, res) => {
-  res.send(accessToken);
+  console.log("hit cred");
+  res.json({
+    access_token: accessToken,
+  });
 });
 
-var generateRandomString = function (length) {
-  var text = "";
-  var possible =
+const generateRandomString = function (length) {
+  let text = "";
+  const possible =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-  for (var i = 0; i < length; i++) {
+  for (let i = 0; i < length; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
   return text;
 };
 
 app.get("/auth/login", (req, res) => {
-  var scope =
-    "streaming \
-               user-read-email \
-               user-read-private";
+  const scope =
+    "streaming user-read-email user-read-private user-read-recently-played user-top-read";
 
-  var state = generateRandomString(16);
+  const state = generateRandomString(16);
 
-  var auth_query_parameters = new URLSearchParams({
+  const auth_query_parameters = new URLSearchParams({
     response_type: "code",
     client_id: clientId,
     scope: scope,
@@ -75,10 +78,8 @@ app.get("/auth/login", (req, res) => {
 });
 
 app.get("/auth/callback", (req, res) => {
-  console.log("hit cb");
-  var code = req.query.code;
-
-  var authOptions = {
+  const code = req.query.code;
+  const authOptions = {
     url: "https://accounts.spotify.com/api/token",
     form: {
       code: code,
@@ -94,7 +95,7 @@ app.get("/auth/callback", (req, res) => {
     json: true,
   };
 
-  request.post(authOptions, function (error, response, body) {
+  request.post(authOptions, (error, response, body) => {
     if (!error && response.statusCode === 200) {
       access_token = body.access_token;
       res.redirect("/");
@@ -103,12 +104,17 @@ app.get("/auth/callback", (req, res) => {
 });
 
 app.get("/auth/token", (req, res) => {
-
-
+  console.log("hit auth");
   res.json({
     access_token: access_token,
   });
 });
+
+app.get("/auth/logout", (req, res) => {
+  access_token = "";
+  res.json({ status: "success", message: "Logout successful" });
+});
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
   getAccessToken();

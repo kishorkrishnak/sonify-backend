@@ -3,6 +3,7 @@ const axios = require("axios");
 const cors = require("cors");
 const request = require("request");
 require("dotenv").config();
+
 const app = express();
 
 const port = process.env.PORT || 5000;
@@ -14,7 +15,11 @@ const frontendUrl = process.env.FRONTEND_URL;
 let accessToken = "";
 let access_token = "";
 let tokenExpirationTime = 0;
-app.use(cors());
+app.use(
+  cors({
+    origin: frontendUrl,
+  })
+);
 
 const getAccessToken = async () => {
   try {
@@ -59,10 +64,9 @@ const generateRandomString = function (length) {
 
 app.get("/auth/login", (req, res) => {
   const scope =
-    "streaming user-read-email user-read-private user-read-recently-played user-top-read";
+    "streaming user-library-modify user-read-email user-read-recently-played user-read-private playlist-modify-public playlist-modify-private user-follow-modify user-read-recently-played user-top-read user-follow-read user-library-read";
 
   const state = generateRandomString(16);
-
   const auth_query_parameters = new URLSearchParams({
     response_type: "code",
     client_id: clientId,
@@ -79,6 +83,7 @@ app.get("/auth/login", (req, res) => {
 
 app.get("/auth/callback", (req, res) => {
   const code = req.query.code;
+
   const authOptions = {
     url: "https://accounts.spotify.com/api/token",
     form: {

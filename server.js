@@ -18,6 +18,7 @@ const frontendUrl = process.env.FRONTEND_URL;
 let accessToken = "";
 let access_token = "";
 let tokenExpirationTime = 0;
+
 app.use(
   cors({
     origin: frontendUrl,
@@ -39,6 +40,8 @@ const getAccessToken = async () => {
           Buffer.from(`${clientId}:${clientSecret}`).toString("base64"),
       },
     });
+
+    console.log(response)
 
     accessToken = response.data.access_token;
     tokenExpirationTime =

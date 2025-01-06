@@ -17,7 +17,6 @@ const frontendUrl = process.env.FRONTEND_URL;
 
 let accessToken = "";
 let access_token = "";
-let tokenExpirationTime = 0;
 
 app.use(
   cors({
@@ -41,18 +40,14 @@ const getAccessToken = async () => {
       },
     });
 
-    console.log(response)
-
     accessToken = response.data.access_token;
-    tokenExpirationTime =
-      new Date().getTime() + response.data.expires_in * 1000;
-    setTimeout(getAccessToken, response.data.expires_in * 1000);
   } catch (error) {
     console.error("Error fetching access token from Spotify API:", error);
   }
 };
 
-app.get("/token", (req, res) => {
+app.get("/token", async (req, res) => {
+  if (!accessToken) await getAccessToken();
   res.json({
     access_token: accessToken,
   });

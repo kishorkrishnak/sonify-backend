@@ -82,31 +82,34 @@ app.get("/auth/login", (req, res) => {
   );
 });
 
-app.get("/auth/callback", (req, res) => {
+app.get("/auth/callback", async (req, res) => {
   const code = req.query.code;
 
-  const authOptions = {
-    url: "https://accounts.spotify.com/api/token",
-    form: {
-      code: code,
-      redirect_uri: `${frontendUrl}/auth/callback`,
-      grant_type: "authorization_code",
-    },
-    headers: {
-      Authorization:
-        "Basic " +
-        Buffer.from(clientId + ":" + clientSecret).toString("base64"),
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    json: true,
-  };
+  try {
+    const response = await axios({
+      method: "post",
+      url: "https://accounts.spotify.com/api/token",
+      data: new URLSearchParams({
+        code: code,
+        redirect_uri: `${frontendUrl}/auth/callback`,
+        grant_type: "authorization_code",
+      }),
+      headers: {
+        Authorization:
+          "Basic " +
+          Buffer.from(clientId + ":" + clientSecret).toString("base64"),
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
 
-  request.post(authOptions, (error, response, body) => {
-    if (!error && response.statusCode === 200) {
-      access_token = body.access_token;
-      res.redirect("/");
-    }
-  });
+    access_token = response.data.access_token;
+    res.redirect("/");
+  } catch (error) {
+    console.error("Error in callback:", error.response?.data || error.message);
+    res.status(500).json({
+      error: "Failed to exchange authorization code for access token",
+    });
+  }
 });
 
 app.get("/auth/token", (req, res) => {
